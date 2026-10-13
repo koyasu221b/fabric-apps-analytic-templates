@@ -3,32 +3,35 @@ name: visuals
 description: >
   Use when user wants to incorporate charts, graphs, data grid, 
   or other visual representations of data into their project.
-  Use VegaVisual and DataGrid components to create these visuals, 
+  Use VegaVisual and DataGrid components for charts and data grids,
   utilizing the shared DataTable input, formatting, theme, and interactivity.
-  Covers the VisualContainer chrome every visual gets by default,
+  Covers the VisualContainer chrome these components provide by default,
   the onInteraction selection/click events host apps consume, named
   multi-table data input for layered overlays and reference lines, and
   Vega-Lite native selections.
+  Use Azure Maps SDK to build local geographic maps.
 ---
 
 # Visuals
 
 ## Types of visuals
-There are 2 different types of visuals that can be used in a project:
+Choose the visual appropriate to the user's request:
 1. Charts and Graphs: These are used to represent data in a visual format, such as bar charts, line charts, pie charts, etc. These are built using vega-lite, see [references/vega-lite-visual.md](references/vega-lite-visual.md) for more details.
 2. Data Grids: These are used to display tabular data in a structured format, allowing for sorting, filtering, and pagination. See [references/data-grid-visual.md](references/data-grid-visual.md) for more details.
+3. Native geographic maps: For local Azure Maps SDK apps, follow [references/azure-maps-visual.md](references/azure-maps-visual.md). Use a server-side subscription-key proxy and the SDK alongside charts/grids, not through a Vega specification. Deployment and Fabric Maps integration are outside this reference's scope.
 
 ## Packages & Imports
 
-The visual components are provided by three packages. **Always use these package imports when creating visuals.**
+The visual components for charts and data grids are provided by the first three packages. The visual components for geographic maps are provided by the fourth package. **Always use these package imports when creating visuals.**
 
 | Package | Primary exports | Example import |
 |---|---|---|
 | `@microsoft/fabric-visuals` | `VegaVisual`, types: `VisualizationSpec`, `VegaLiteConfig`, `VegaVisualProps` | `import { VegaVisual } from "@microsoft/fabric-visuals"` |
 | `@microsoft/fabric-datagrid` | `DataGrid`, types: `GridColumnDef`, `Row`, `CellValue`, `DataGridProps`, `DataGridTheme`, `SortConfig` | `import { DataGrid } from "@microsoft/fabric-datagrid"` |
 | `@microsoft/fabric-visuals-core` | `isDataTable`, `convertDataTableToRows`, design tokens | `import { isDataTable } from "@microsoft/fabric-visuals-core"` |
+| `azure-maps-control` | `Map`, `source`, `layer`, `data`, `Popup` | `import * as atlas from "azure-maps-control"` |
 
-The `DataTable` type (used by both components) is defined in `@microsoft/fabric-visuals-core` and re-exported by the visual packages' type definitions.
+The `DataTable` type (used by VegaVisual and DataGrid) is defined in `@microsoft/fabric-visuals-core` and re-exported by the visual packages' type definitions. To display model data, Azure Maps uses GeoJSON features in an `atlas.source.DataSource`, rather than `DataTable`.
 
 ## Data Format
 The chart and data grid components share a unified `data` prop of type `DataTable` (from `@microsoft/fabric-visuals-core`). This structured format carries column metadata (`displayName`, `format`, `semanticType`) that the components use for axis titles, grid headers, number formatting, and tooltips.
@@ -65,7 +68,9 @@ const inlineSpec = {
 
 For the `DataTable` schema and `ColumnDef` fields, see [references/data-table.md](references/data-table.md).
 
-## VisualContainer defaults for every visual
+<a id="visualcontainer-defaults-for-every-visual"></a>
+
+## VisualContainer defaults for VegaVisual and DataGrid
 
 `VegaVisual` and `DataGrid` wrap **themselves** in a `VisualContainer` by default. The container draws the chrome — border, padding, header (title/subtitle) — plus its built-in actions, all enabled by default. Do not add a wrapper of your own unless absolutely required.
 
@@ -82,6 +87,8 @@ For the `DataTable` schema and `ColumnDef` fields, see [references/data-table.md
 
 Anything the default container doesn't cover — custom actions, programmatic capture, the same chrome around a non-visual etc: [references/visual-container.md](references/visual-container.md).
 
+Azure Maps does not automatically provide this container or its built-in actions. Follow the [Azure Maps reference](references/azure-maps-visual.md) to apply matching card and title styling.
+
 ## Formatting & Theme
 - **Formatting rules**: Number formatting, color palettes, chart-specific encoding rules, highlighting guidelines, and a default theme. See [references/formatting.md](references/formatting.md).
 
@@ -89,6 +96,8 @@ Anything the default container doesn't cover — custom actions, programmatic ca
 Always use the above mentioned ways to create visual when possible. If the user's request doesn't allow creation using the above methods, ask the user if they are ok with using another library for creating the visual. If they are ok with it, use the library to create the visual. If they are not ok with it, then build that visual from scratch using HTML, CSS, and JS/TS. Make sure to ask the user for any specific requirements they have for the visual, such as colors, labels, etc.
 
 ## Interactivity
+
+For Azure Maps, use SDK layer events as described in the [Azure Maps reference](references/azure-maps-visual.md), not an `onInteraction` prop.
 
 Both `VegaVisual` and `DataGrid` expose an `onInteraction` prop that emits structured, predicate-based events when the user clicks a data point or row.
 
